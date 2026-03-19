@@ -41,9 +41,18 @@ canvas{ display:block; }
 #storeBtn{ background:linear-gradient(45deg,#4fc3f7,#0288d1); color:white; box-shadow:3px 3px 0 #0277bd;}
 #storeBtn::before { content: "🛍️ "; font-size:24px; }
 
-#settingsScreen{ background:#f0f0f0; display:none; padding-top:80px; }
-#settingsScreen h2{ margin-bottom:20px; color:#333; }
-#settingsScreen .backBtn{ position:absolute; top:15px; left:15px; font-size:28px; background:transparent; color:orange; border:none; cursor:pointer; }
+#settingsScreen{ background:#f0f0f0; display:none; padding-top:80px; flex-direction:row; }
+#settingsLeft{ width:40%; padding:20px; text-align:center; }
+#settingsRight{ width:60%; padding:20px; background:rgba(255,255,255,0.9); border-radius:20px; }
+.settingsTab{ width:100%; padding:15px; margin:10px 0; font-size:24px; border:none; border-radius:10px; cursor:pointer; background:#ddd; transition:0.3s; }
+.settingsTab.active{ background:linear-gradient(45deg,#4CAF50,#45a049); color:white; }
+#difficultyOptions, #soundOptions{ display:none; text-align:center; }
+#difficultyOptions.active, #soundOptions.active{ display:block; }
+#difficultyOptions label{ display:block; margin:15px; font-size:20px; }
+.minecraftToggle{ position:relative; width:60px; height:34px; background:#ccc; border-radius:34px; cursor:pointer; margin:10px auto; display:block; transition:0.4s; }
+.minecraftToggle.active{ background:linear-gradient(45deg,#4CAF50,#45a049); }
+.minecraftToggle::before{ content:""; position:absolute; height:26px; width:26px; left:4px; bottom:4px; background:white; border-radius:50%; transition:0.4s; }
+.minecraftToggle.active::before{ transform:translateX(26px); }
 #storeScreen{ display: none; background: linear-gradient(white, #f8f9fa); padding-top:60px; }
 #storeScreen h2{ margin: 15px 0; font-size: 28px; color: #333; }
 #upperSkinDisplay{ text-align: center; margin: 20px 0; }
@@ -77,6 +86,12 @@ canvas{ display:block; }
 #restartBtn{ top:40%; background:linear-gradient(45deg,#ff5722,#e64a19); color:white; }
 #homeBtn{ top:55%; background:linear-gradient(45deg,#03a9f4,#0288d1); color:white; }
 
+#gameOverOverlay{ 
+    position:absolute; top:0; left:0; width:100%; height:100%; 
+    background:rgba(0,0,0,0.8); display:none; flex-direction:column; 
+    align-items:center; justify-content:center; z-index:200; color:white;
+    opacity:0; transition:opacity 1s;
+}
 #madeBy{ position:absolute; bottom:15px; left:15px; font-size:12px; z-index:200; color:rgba(0,0,0,0.7); font-weight:bold; }
 </style>
 </head>
@@ -95,12 +110,29 @@ canvas{ display:block; }
 </div>
 
 <div id="settingsScreen">
-    <button class="backBtn">&#8592;</button>
-    <h2>🎮 Select Difficulty</h2>
-    <div id="difficultyOptions" style="text-align:center;">
-        <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Very Easy">  Very Easy</label>
-        <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Normal">  Normal</label>
-        <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Hard">  Hard</label>
+    <button class="backBtn" style="position:absolute; top:15px; left:15px; font-size:28px; background:transparent; color:orange; border:none; cursor:pointer;">&#8592;</button>
+    <div id="settingsLeft">
+        <h2 style="margin-bottom:30px;">⚙️ Settings</h2>
+        <button class="settingsTab active" data-tab="difficulty">Difficulty</button>
+        <button class="settingsTab" data-tab="sounds">Music/Sounds</button>
+    </div>
+    <div id="settingsRight">
+        <div id="difficultyOptions" class="active">
+            <h3>Select Difficulty</h3>
+            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Very Easy">  Very Easy</label>
+            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Normal">  Normal</label>
+            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Hard">  Hard</label>
+        </div>
+        <div id="soundOptions">
+            <h3>🔊 Sound Settings</h3>
+            <label>All Sounds <span class="minecraftToggle active" id="allSoundsToggle"></span></label>
+            <label>BG Music <span class="minecraftToggle active" id="bgMusicToggle"></span></label>
+            <label>Score Sound <span class="minecraftToggle active" id="scoreSoundToggle"></span></label>
+            <label>Bird Fly <span class="minecraftToggle active" id="flySoundToggle"></span></label>
+            <label>Countdown <span class="minecraftToggle active" id="countdownSoundToggle"></span></label>
+            <label>Buttons <span class="minecraftToggle active" id="buttonSoundToggle"></span></label>
+            <label>Game Over <span class="minecraftToggle active" id="gameoverSoundToggle"></span></label>
+        </div>
     </div>
 </div>
 
@@ -118,6 +150,10 @@ canvas{ display:block; }
 <button id="pauseHomeBtn">🏠 Home</button>
 <button id="restartBtn">🔄 Restart</button>
 <button id="homeBtn">🏠 Home</button>
+<div id="gameOverOverlay">
+    <h2>GAME OVER</h2>
+    <div style="font-size:48px; margin:20px;">Final Score: <span id="finalScore">0</span></div>
+</div>
 <div id="madeBy">Made by TROLLHUNTER 🚀</div>
 
 <script>
@@ -129,6 +165,52 @@ const skins = [
     {name:"Angry Bird", file:"Picsart_26-02-27_10-15-45-688.png", unlockScore:30, pipeColor:"#ff1744", groundColor:"#d50000"},
     {name:"Crow", file:"Picsart_26-02-27_20-37-59-368.png", unlockScore:50, pipeColor:"#333333", groundColor:"#555555"}
 ];
+
+// Audio Manager
+const audio = {
+    countdown: new Audio('countdown_sound.mp3'),
+    go: new Audio('Go_sound.mp3'),
+    fly: new Audio('bird_fly_sound.mp3'),
+    button: new Audio('bottons_sound.mp3'),
+    score: new Audio('coine_sound.mp3'),
+    gameover: new Audio('game_over_sound.mp3'),
+    bgmusic: new Audio('game_bg_sound.mp3')
+};
+audio.bgmusic.loop = true;
+
+// Sound settings
+let soundSettings = JSON.parse(localStorage.getItem("fluppySoundSettings")) || {
+    all: true, bgmusic: true, score: true, fly: true, countdown: true, button: true, gameover: true
+};
+
+function playSound(soundName) {
+    if (!soundSettings.all || !soundSettings[soundName]) return;
+    audio[soundName].currentTime = 0;
+    audio[soundName].play().catch(() => {});
+}
+
+function toggleAudio(elementId, settingName) {
+    soundSettings[settingName] = !soundSettings[settingName];
+    document.getElementById(elementId).classList.toggle('active');
+    localStorage.setItem("fluppySoundSettings", JSON.stringify(soundSettings));
+    if (settingName === 'all') {
+        Object.keys(soundSettings).forEach(key => {
+            if (key !== 'all') soundSettings[key] = soundSettings.all;
+        });
+        updateAllToggles();
+    }
+}
+
+function updateAllToggles() {
+    Object.keys(soundSettings).forEach(key => {
+        if (key !== 'all') {
+            const toggle = document.getElementById(key + 'Toggle');
+            if (toggle) {
+                toggle.classList.toggle('active', soundSettings[key]);
+            }
+        }
+    });
+}
 
 function preloadImages() {
     return Promise.all(skins.map(skin => {
@@ -195,7 +277,9 @@ const elements = {
     skinRow: document.getElementById("skinRow"),
     titleScreen: document.getElementById("titleScreen"),
     settingsScreen: document.getElementById("settingsScreen"),
-    storeScreen: document.getElementById("storeScreen")
+    storeScreen: document.getElementById("storeScreen"),
+    gameOverOverlay: document.getElementById("gameOverOverlay"),
+    finalScore: document.getElementById("finalScore")
 };
 
 const gapSizes = {
@@ -209,15 +293,20 @@ async function init() {
     const savedDifficulty = localStorage.getItem("fluppyDifficulty") || "Normal";
     gameState.difficulty = savedDifficulty;
     document.querySelector(`input[name="difficulty"][value="${savedDifficulty}"]`).checked = true;
+    
+    // Load sound settings
+    Object.keys(soundSettings).forEach(key => {
+        const toggle = document.getElementById(key + 'Toggle');
+        if (toggle) toggle.classList.toggle('active', soundSettings[key]);
+    });
+    
+    if (soundSettings.bgmusic) audio.bgmusic.play().catch(() => {});
 }
 
-elements.okBtn.onclick = () => {
-    elements.splashScreen.style.opacity = "0";
-    setTimeout(() => {
-        elements.splashScreen.style.display = "none";
-        elements.titleScreen.style.display = "flex";
-    }, 500);
-};
+elements.okBtn.onclick = () => { playSound('button'); elements.splashScreen.style.opacity = "0"; setTimeout(() => {
+    elements.splashScreen.style.display = "none";
+    elements.titleScreen.style.display = "flex";
+}, 500); };
 
 function initGame() {
     gameState.bird = {x:100,y:200,width:60,height:60,velocity:0,rotation:0};
@@ -261,6 +350,7 @@ function updatePipeSpawning() {
 }
 
 function startGame() {
+    playSound('button');
     if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
     
     [elements.titleScreen, elements.settingsScreen, elements.storeScreen].forEach(el => el.style.display = "none");
@@ -276,9 +366,11 @@ function startGame() {
     
     const interval = setInterval(() => {
         overlay.textContent = countdown[countIndex];
+        if (countIndex < 3) playSound('countdown');
         countIndex++;
         if (countIndex >= countdown.length) {
             clearInterval(interval);
+            playSound('go');
             document.body.removeChild(overlay);
             elements.pauseBtn.style.display = "block";
             gameState.gameStarted = true;
@@ -288,18 +380,25 @@ function startGame() {
 }
 
 function endGame() {
+    playSound('gameover');
     gameState.gameOver = true;
     if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
-    elements.restartBtn.style.display = "block";
-    elements.homeBtn.style.display = "block";
-    elements.pauseBtn.style.display = "none";
-    elements.pauseResumeBtn.style.display = "none";
-    elements.pauseHomeBtn.style.display = "none";
     
     if (gameState.score > gameState.highScore) {
         gameState.highScore = gameState.score;
         localStorage.setItem("fluppyHighScore", gameState.highScore);
     }
+    
+    elements.finalScore.textContent = gameState.score;
+    elements.gameOverOverlay.style.opacity = "0";
+    elements.gameOverOverlay.style.display = "flex";
+    
+    setTimeout(() => {
+        elements.gameOverOverlay.style.opacity = "1";
+        elements.restartBtn.style.display = "block";
+        elements.homeBtn.style.display = "block";
+        elements.pauseBtn.style.display = "none";
+    }, 1500);
     
     skins.forEach(s => { 
         if (gameState.score >= s.unlockScore) {
@@ -358,6 +457,7 @@ function gameLoop() {
         if (!pipe.scored && pipe.x + pipe.width < gameState.bird.x) {
             gameState.score++;
             pipe.scored = true;
+            playSound('score');
             gameState.currentPipeSpeed = Math.min(gameState.currentPipeSpeed + 0.04, gameState.maxPipeSpeed);
         }
         
@@ -381,12 +481,13 @@ function gameLoop() {
     if (birdImages[selectedSkin.name]) {
         ctx.drawImage(birdImages[selectedSkin.name], -gameState.bird.width/2, -gameState.bird.height/2, gameState.bird.width, gameState.bird.height);
     } else {
-        ctx.font = "bold 50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.font = "bold 50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillStyle = "orange";
         ctx.fillText("🦜", 0, 0);
     }
     ctx.restore();
     
+    // UI - Score display
     ctx.fillStyle = "black"; 
     ctx.font = "bold 32px Arial"; 
     ctx.textAlign = "left";
@@ -399,6 +500,7 @@ function jump() {
     if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) { 
         gameState.bird.velocity = -7.5;
         gameState.bird.rotation = -25;
+        playSound('fly');
     } 
 }
 
@@ -409,14 +511,34 @@ document.addEventListener("click", (e) => {
 document.addEventListener("touchstart", e => { e.preventDefault(); jump(); });
 document.addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); jump(); } });
 
+// Settings tabs
+document.querySelectorAll('.settingsTab').forEach(tab => {
+    tab.onclick = () => {
+        playSound('button');
+        document.querySelectorAll('.settingsTab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('#settingsRight > div').forEach(div => div.classList.remove('active'));
+        document.getElementById(tab.dataset.tab + 'Options').classList.add('active');
+    };
+});
+
+// Sound toggles
+['allSounds', 'bgMusic', 'score', 'fly', 'countdown', 'button', 'gameover'].forEach(id => {
+    const toggle = document.getElementById(id + 'Toggle');
+    if (toggle) {
+        toggle.onclick = () => toggleAudio(id, id === 'allSounds' ? 'all' : id);
+    }
+});
+
 elements.playBtn.onclick = startGame;
-elements.settingsBtnMain.onclick = () => { elements.titleScreen.style.display = "none"; elements.settingsScreen.style.display = "flex"; };
-elements.backBtn.onclick = () => { elements.settingsScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
-elements.storeBtn.onclick = () => { elements.titleScreen.style.display = "none"; elements.storeScreen.style.display = "flex"; renderSkins(); };
-elements.backStoreBtn.onclick = () => { elements.storeScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
+elements.settingsBtnMain.onclick = () => { playSound('button'); elements.titleScreen.style.display = "none"; elements.settingsScreen.style.display = "flex"; };
+elements.backBtn.onclick = () => { playSound('button'); elements.settingsScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
+elements.storeBtn.onclick = () => { playSound('button'); elements.titleScreen.style.display = "none"; elements.storeScreen.style.display = "flex"; renderSkins(); };
+elements.backStoreBtn.onclick = () => { playSound('button'); elements.storeScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
 
 document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
     radio.onchange = () => {
+        playSound('button');
         gameState.difficulty = radio.value;
         gameState.currentPipeSpeed = {"Very Easy":2.0,"Normal":2.5,"Hard":3.0}[radio.value];
         gameState.basePipeSpeed = gameState.currentPipeSpeed;
@@ -425,6 +547,7 @@ document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
 });
 
 function renderSkins() {
+    playSound('button');
     elements.skinRow.innerHTML = "";
     elements.upperSkinDisplay.innerHTML = "";
     
@@ -450,6 +573,7 @@ function renderSkins() {
         box.appendChild(overlay);
         
         box.onclick = () => {
+            playSound('button');
             if (skinData[s.name]?.unlocked) {
                 selectedSkin = s;
                 selectedSkinName = s.name;
@@ -464,6 +588,7 @@ function renderSkins() {
 }
 
 elements.confirmSkinBtn.onclick = () => {
+    playSound('button');
     if (elements.confirmSkinBtn.classList.contains("unlocked")) {
         localStorage.setItem("selectedSkin", selectedSkin.name);
         elements.storeScreen.style.display = "none";
@@ -472,11 +597,13 @@ elements.confirmSkinBtn.onclick = () => {
 };
 
 elements.pauseBtn.onclick = () => {
+    playSound('button');
     gameState.paused = !gameState.paused;
     if (gameState.paused) {
         elements.pauseBtn.style.display = "none";
         elements.pauseResumeBtn.style.display = "block";
         elements.pauseHomeBtn.style.display = "block";
+        if (audio.bgmusic.paused && soundSettings.bgmusic) audio.bgmusic.play();
     } else {
         elements.pauseResumeBtn.style.display = "none";
         elements.pauseHomeBtn.style.display = "none";
@@ -485,6 +612,7 @@ elements.pauseBtn.onclick = () => {
 };
 
 elements.pauseResumeBtn.onclick = () => {
+    playSound('button');
     gameState.paused = false;
     elements.pauseResumeBtn.style.display = "none";
     elements.pauseHomeBtn.style.display = "none";
@@ -492,6 +620,7 @@ elements.pauseResumeBtn.onclick = () => {
 };
 
 elements.pauseHomeBtn.onclick = () => {
+    playSound('button');
     if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
     elements.titleScreen.style.display = "flex";
     [elements.pauseBtn, elements.pauseResumeBtn, elements.pauseHomeBtn, elements.restartBtn, elements.homeBtn].forEach(el => el.style.display = "none");
@@ -501,6 +630,7 @@ elements.pauseHomeBtn.onclick = () => {
 
 elements.restartBtn.onclick = startGame;
 elements.homeBtn.onclick = () => {
+    playSound('button');
     if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
     elements.titleScreen.style.display = "flex";
     [elements.restartBtn, elements.homeBtn, elements.pauseBtn].forEach(el => el.style.display = "none");
