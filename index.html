@@ -6,6 +6,13 @@
 <style>
 body{ margin:0; overflow:hidden; font-family:Arial; background:skyblue;}
 canvas{ display:block; }
+#splashScreen{ 
+    position:absolute; width:100%; height:100%; top:0; left:0; 
+    display:flex; flex-direction:column; align-items:center; justify-content:center; 
+    z-index:1000; background:#000; transition: opacity 0.5s; 
+}
+#splashScreen img{ max-width:300px; max-height:300px; border-radius:20px; box-shadow:0 10px 40px rgba(255,255,0,0.5); }
+#splashScreen .okText{ position:absolute; bottom:50px; font-size:28px; color:#fff; font-weight:bold; text-shadow:2px 2px 4px rgba(0,0,0,0.8); }
 #titleScreen, #settingsScreen, #storeScreen{ 
     position:absolute; width:100%; height:100%; top:0; left:0; 
     display:flex; flex-direction:column; align-items:center; justify-content:center; 
@@ -26,6 +33,13 @@ canvas{ display:block; }
 #settingsBtnMain::before { content: "⚙ "; font-size:24px; }
 #storeBtn{ background:linear-gradient(45deg,#4fc3f7,#0288d1); color:white; box-shadow:3px 3px 0 #0277bd;}
 #storeBtn::before { content: "🛍️ "; font-size:24px; }
+#okBtn{ 
+    position:absolute; bottom:80px; padding:20px 50px; font-size:28px; 
+    background:linear-gradient(45deg, #4CAF50, #45a049); color:white; 
+    border:none; border-radius:25px; cursor:pointer; font-weight:bold; 
+    box-shadow:0 8px 25px rgba(0,0,0,0.4); transition:0.3s;
+}
+#okBtn:hover{ transform:scale(1.1); box-shadow:0 12px 35px rgba(0,0,0,0.5); }
 
 #settingsScreen{ background:#f0f0f0; display:none; padding-top:80px; }
 #settingsScreen h2{ margin-bottom:20px; color:#333; }
@@ -68,7 +82,13 @@ canvas{ display:block; }
 </head>
 <body>
 
-<div id="titleScreen">
+<div id="splashScreen">
+    <img src="Picsart_26-03-19_22-39-08-547.jpg" alt="Splash Image" onerror="this.style.display='none';">
+    <div class="okText">OK</div>
+    <button id="okBtn">OK</button>
+</div>
+
+<div id="titleScreen" style="display:none;">
     <h1>🕹️ Fluppy Bird</h1>
     <button id="playBtn">Play Game</button>
     <button id="settingsBtnMain">Settings</button>
@@ -139,7 +159,7 @@ let gameState = {
     gravity: 0.4,
     pipes:[],
     score:0, 
-    highScore:parseInt(localStorage.getItem("fluppyHighScore"))||0, 
+    highScore:parseInt(localStorage.getItem("fluppyHighScore"))||0,  // 🔥 Wapas pehle jaisa - localStorage se load hoga
     gameOver:false, 
     gameStarted:false, 
     paused:false, 
@@ -159,6 +179,8 @@ let selectedSkinName = localStorage.getItem("selectedSkin") || "Bird";
 let selectedSkin = skins.find(s => s.name === selectedSkinName);
 
 const elements = {
+    splashScreen: document.getElementById("splashScreen"),
+    okBtn: document.getElementById("okBtn"),
     playBtn: document.getElementById("playBtn"),
     settingsBtnMain: document.getElementById("settingsBtnMain"),
     storeBtn: document.getElementById("storeBtn"),
@@ -189,6 +211,15 @@ async function init() {
     gameState.difficulty = savedDifficulty;
     document.querySelector(`input[name="difficulty"][value="${savedDifficulty}"]`).checked = true;
 }
+
+// 🔥 SPLASH SCREEN HANDLER
+elements.okBtn.onclick = () => {
+    elements.splashScreen.style.opacity = "0";
+    setTimeout(() => {
+        elements.splashScreen.style.display = "none";
+        elements.titleScreen.style.display = "flex";
+    }, 500);
+};
 
 function initGame() {
     gameState.bird = {x:100,y:200,width:60,height:60,velocity:0,rotation:0};
@@ -267,6 +298,7 @@ function endGame() {
     elements.pauseResumeBtn.style.display = "none";
     elements.pauseHomeBtn.style.display = "none";
     
+    // 🔥 PEHLE Jaisa high score save system
     if (gameState.score > gameState.highScore) {
         gameState.highScore = gameState.score;
         localStorage.setItem("fluppyHighScore", gameState.highScore);
@@ -281,6 +313,7 @@ function endGame() {
     localStorage.setItem("fluppySkins", JSON.stringify(skinData));
 }
 
+// Baaki gameLoop, jump, event listeners same rahenge...
 function gameLoop() {
     gameState.animationId = requestAnimationFrame(gameLoop);
     
@@ -358,7 +391,6 @@ function gameLoop() {
     }
     ctx.restore();
     
-    // ✅ SMALLER FONT SIZE FOR SCORE DISPLAY
     ctx.fillStyle = "black"; 
     ctx.font = "bold 32px Arial"; 
     ctx.textAlign = "left";
