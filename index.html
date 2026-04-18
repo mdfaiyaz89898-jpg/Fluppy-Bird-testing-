@@ -1,641 +1,847 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Fluppy Bird - PERFECT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fluppy Bird</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
-body{ margin:0; overflow:hidden; font-family:Arial; background:skyblue;}
-canvas{ display:block; }
-#splashScreen{ 
-    position:absolute; width:100%; height:100%; top:0; left:0; 
-    display:flex; flex-direction:column; align-items:center; justify-content:center; 
-    z-index:1000; background:#000; transition: opacity 0.5s; 
-}
-#splashScreen img{ max-width:300px; max-height:300px; border-radius:20px; box-shadow:0 10px 40px rgba(255,255,0,0.5); }
-#okBtn{ 
-    position:absolute; bottom:80px; padding:20px 50px; font-size:28px; 
-    background:linear-gradient(45deg, #4CAF50, #45a049); color:white; 
-    border:none; border-radius:25px; cursor:pointer; font-weight:bold; 
-    box-shadow:0 8px 25px rgba(0,0,0,0.4); transition:0.3s;
-}
-#okBtn:hover{ transform:scale(1.1); box-shadow:0 12px 35px rgba(0,0,0,0.5); }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{overflow:hidden;font-family:'Fredoka One','Comic Sans MS',cursive;background:#000;}
+canvas{display:block;position:absolute;top:0;left:0;z-index:0;}
 
-#titleScreen, #settingsScreen, #storeScreen{ 
-    position:absolute; width:100%; height:100%; top:0; left:0; 
-    display:flex; flex-direction:column; align-items:center; justify-content:center; 
-    z-index:100; transition: opacity 0.3s;
+/* ===== SPLASH ===== */
+#splashScreen{
+    position:absolute;inset:0;z-index:1000;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%,#1c2340 0%,#080b14 100%);
+    transition:opacity 0.5s;gap:0;
 }
-#titleScreen{ background: linear-gradient(45deg, skyblue, #87CEEB); }
-#titleScreen h1{ 
-    font-size:60px; color:yellow; text-shadow:4px 4px 0 black,8px 8px 0 orange; 
-    font-family:'Comic Sans MS', cursive; animation:bounce 1s infinite alternate; 
-    margin-bottom:30px;
+#splashGameTitle{
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(34px,8vw,58px);
+    color:#FFD700;letter-spacing:4px;
+    text-shadow:3px 3px 0 #000,6px 6px 0 #7a5800;
+    margin-bottom:16px;
 }
-@keyframes bounce{0%{transform:translateY(0px);}100%{transform:translateY(-10px);}}
-#titleScreen button{ padding:15px 35px; font-size:22px; border:none; border-radius:15px; margin:10px; cursor:pointer; transition:0.3s; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-#titleScreen button:hover{ transform:scale(1.1) rotate(2deg); }
-#playBtn{ background:linear-gradient(45deg,#ffeb3b,#fbc02d); color:#000; font-size:24px; box-shadow:3px 3px 0 #ffa000;}
-#playBtn::before { content: "▶ "; font-size:28px; }
-#settingsBtnMain{ background:linear-gradient(45deg,#ff9800,#f57c00); color:white; box-shadow:3px 3px 0 #e65100;}
-#settingsBtnMain::before { content: "⚙ "; font-size:24px; }
-#storeBtn{ background:linear-gradient(45deg,#4fc3f7,#0288d1); color:white; box-shadow:3px 3px 0 #0277bd;}
-#storeBtn::before { content: "🛍️ "; font-size:24px; }
+#splashImgWrap{
+    width:min(55vw,210px);height:min(55vw,210px);
+    border-radius:24px;overflow:hidden;
+    border:3px solid rgba(255,215,0,0.5);
+    box-shadow:0 0 0 6px rgba(255,215,0,0.12),0 12px 40px rgba(0,0,0,0.8);
+    margin-bottom:20px;background:#111;
+    display:flex;align-items:center;justify-content:center;
+}
+#splashImgWrap img{width:100%;height:100%;object-fit:cover;display:block;}
+#splashMsg{
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(13px,3.5vw,16px);color:#fff;text-align:center;
+    padding:12px 20px;margin-bottom:24px;
+    background:rgba(255,140,0,0.18);
+    border:2px solid rgba(255,140,0,0.55);border-radius:14px;
+    max-width:min(88vw,310px);line-height:1.55;
+}
+#okBtn{
+    padding:15px 50px;font-size:clamp(18px,4.5vw,22px);
+    background:linear-gradient(160deg,#4CAF50,#2e7d32);color:#fff;
+    border:none;border-radius:14px;cursor:pointer;
+    font-family:'Fredoka One',cursive;letter-spacing:1.5px;
+    box-shadow:0 6px 0 #1b5e20,0 10px 24px rgba(0,0,0,0.5);
+    transition:transform 0.15s,box-shadow 0.15s;
+}
+#okBtn:active{transform:translateY(4px);box-shadow:0 2px 0 #1b5e20;}
 
-#settingsScreen{ background:#f0f0f0; display:none; padding-top:80px; flex-direction:row; }
-#settingsLeft{ width:40%; padding:20px; text-align:center; }
-#settingsRight{ width:60%; padding:20px; background:rgba(255,255,255,0.9); border-radius:20px; }
-.settingsTab{ width:100%; padding:15px; margin:10px 0; font-size:24px; border:none; border-radius:10px; cursor:pointer; background:#ddd; transition:0.3s; }
-.settingsTab.active{ background:linear-gradient(45deg,#4CAF50,#45a049); color:white; }
-#difficultyOptions, #soundOptions{ display:none; text-align:center; }
-#difficultyOptions.active, #soundOptions.active{ display:block; }
-#difficultyOptions label{ display:block; margin:15px; font-size:20px; }
-.minecraftToggle{ position:relative; width:60px; height:34px; background:#ccc; border-radius:34px; cursor:pointer; margin:10px auto; display:block; transition:0.4s; }
-.minecraftToggle.active{ background:linear-gradient(45deg,#4CAF50,#45a049); }
-.minecraftToggle::before{ content:""; position:absolute; height:26px; width:26px; left:4px; bottom:4px; background:white; border-radius:50%; transition:0.4s; }
-.minecraftToggle.active::before{ transform:translateX(26px); }
-#storeScreen{ display: none; background: linear-gradient(white, #f8f9fa); padding-top:60px; }
-#storeScreen h2{ margin: 15px 0; font-size: 28px; color: #333; }
-#upperSkinDisplay{ text-align: center; margin: 20px 0; }
-#upperSkinDisplay img{ width:150px; height:150px; border-radius:20px; border:4px solid #ddd; box-shadow:0 5px 20px rgba(0,0,0,0.2); }
-.skinRow{ display: flex; flex-direction: row; align-items: center; gap: 18px; margin: 20px 0; width: 95%; height: 200px; overflow-x: auto; padding: 15px 20px; scroll-behavior: smooth;}
-.skinBox{ min-width: 140px; flex-shrink: 0; text-align: center; cursor: pointer; position: relative; padding:15px; background:#fff; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); transition:0.3s;}
-.skinBox:hover{ transform:scale(1.05); box-shadow:0 8px 25px rgba(0,0,0,0.2); }
-.skinBox.selected{ border: 3px solid #4CAF50; box-shadow: 0 0 20px rgba(76,175,80,0.5); }
-.skinBox img{ width:100px; height:100px; border-radius:10px; }
-.skinBox .name{ font-size:14px; font-weight:bold; color:#333; margin:5px 0; }
-.skinBox .price{ font-size:12px; color:#666; }
-.lockOverlay{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius:15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 35px; }
-#confirmSkinBtn{ padding: 15px 40px; font-size: 20px; border-radius: 25px; margin-top: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); border:none; font-weight:bold; cursor:pointer; }
-.confirmBtn.locked{ background: #ccc; color: white; cursor: not-allowed; }
-.confirmBtn.unlocked{ background: linear-gradient(45deg, #4CAF50, #45a049); color: white; }
-.backStoreBtn{ position: absolute; top:15px; left:15px; font-size:32px; background:transparent; color:orange; border:none; cursor:pointer; }
-
-#pauseBtn{ 
-    position:absolute; right:15px; top:15px; display:none; background:#ff9800; color:white; padding:12px 20px; min-width:80px; 
-    border:none; border-radius:12px; font-size:18px; cursor:pointer; font-weight:bold; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+/* ===== TITLE ===== */
+#titleScreen{
+    position:absolute;inset:0;z-index:100;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#5bc8f5 0%,#87CEEB 45%,#a8e6a3 100%);
 }
-
-#pauseResumeBtn, #pauseHomeBtn, #restartBtn, #homeBtn{ 
-    position:absolute; left:50%; transform:translateX(-50%); display:none; 
-    border:none; border-radius:12px; font-size:24px; cursor:pointer; font-weight:bold; 
-    padding:20px 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+#titleScreen::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:
+        radial-gradient(ellipse 120px 50px at 15% 20%,rgba(255,255,255,0.7) 0%,transparent 70%),
+        radial-gradient(ellipse 160px 60px at 70% 12%,rgba(255,255,255,0.6) 0%,transparent 70%),
+        radial-gradient(ellipse 100px 45px at 45% 35%,rgba(255,255,255,0.5) 0%,transparent 70%);
 }
-#pauseResumeBtn{ top:40%; background:linear-gradient(45deg,#ff9800,#f57c00); color:white; }
-#pauseHomeBtn{ top:55%; background:linear-gradient(45deg,#03a9f4,#0288d1); color:white; }
-#restartBtn{ top:40%; background:linear-gradient(45deg,#ff5722,#e64a19); color:white; }
-#homeBtn{ top:55%; background:linear-gradient(45deg,#03a9f4,#0288d1); color:white; }
-
-#gameOverOverlay{ 
-    position:absolute; top:0; left:0; width:100%; height:100%; 
-    background:rgba(0,0,0,0.8); display:none; flex-direction:column; 
-    align-items:center; justify-content:center; z-index:200; color:white;
-    opacity:0; transition:opacity 1s;
+#titleScreen h1{
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(38px,9vw,68px);
+    color:#FFD700;letter-spacing:4px;
+    text-shadow:4px 4px 0 #000,7px 7px 0 #b8860b;
+    animation:bounce 1s infinite alternate;
+    margin-bottom:30px;text-align:center;position:relative;
 }
-#madeBy{ position:absolute; bottom:15px; left:15px; font-size:12px; z-index:200; color:rgba(0,0,0,0.7); font-weight:bold; }
+@keyframes bounce{0%{transform:translateY(0);}100%{transform:translateY(-12px);}}
+.menuBtn{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:15px 38px;font-size:clamp(18px,4vw,22px);
+    border:none;border-radius:14px;margin:7px;cursor:pointer;
+    font-family:'Fredoka One',cursive;letter-spacing:1px;
+    min-width:min(75vw,230px);
+    transition:transform 0.12s,box-shadow 0.12s;
+}
+.menuBtn:active{transform:translateY(4px);}
+#playBtn{background:linear-gradient(160deg,#ffe234,#fbc02d);color:#1a0f00;box-shadow:0 6px 0 #c97c00;}
+#settingsBtnMain{background:linear-gradient(160deg,#ff9800,#e65100);color:#fff;box-shadow:0 6px 0 #7f2400;}
+#storeBtn{background:linear-gradient(160deg,#29b6f6,#0277bd);color:#fff;box-shadow:0 6px 0 #014f85;}
+
+/* ===== SETTINGS ===== */
+#settingsScreen{
+    position:absolute;inset:0;z-index:100;display:none;
+    background:linear-gradient(135deg,#0d1b2a 0%,#1b2838 50%,#0d1b2a 100%);
+}
+#settingsScreen::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+    background-size:40px 40px;
+}
+.screenHeader{
+    position:relative;z-index:2;height:62px;
+    display:flex;align-items:center;padding:0 18px;
+    background:rgba(0,0,0,0.45);
+    border-bottom:2px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+}
+.backBtn{
+    background:rgba(255,165,0,0.15);color:#FFA500;
+    border:2px solid rgba(255,165,0,0.5);border-radius:10px;
+    padding:7px 14px;font-size:20px;cursor:pointer;
+    font-family:'Fredoka One',cursive;transition:0.2s;
+}
+.backBtn:active{background:rgba(255,165,0,0.35);}
+.screenHeader h2{
+    color:#fff;margin:0 0 0 16px;font-size:24px;
+    font-family:'Fredoka One',cursive;letter-spacing:1px;
+}
+#settingsBody{display:flex;height:calc(100% - 62px);position:relative;z-index:1;}
+#settingsLeft{
+    width:38%;padding:18px 12px;display:flex;flex-direction:column;gap:10px;
+    border-right:1px solid rgba(255,255,255,0.07);
+    background:rgba(0,0,0,0.2);
+}
+.settingsTab{
+    width:100%;padding:15px 16px;font-size:clamp(15px,3.5vw,18px);
+    border:2px solid rgba(255,255,255,0.07);border-radius:12px;
+    cursor:pointer;font-family:'Fredoka One',cursive;
+    background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.55);
+    transition:0.2s;text-align:left;letter-spacing:0.5px;
+}
+.settingsTab.active{
+    background:linear-gradient(135deg,rgba(76,175,80,0.25),rgba(56,142,60,0.2));
+    border-color:rgba(76,175,80,0.6);color:#fff;
+}
+#settingsRight{flex:1;padding:22px 18px;overflow-y:auto;}
+.settingsPanel{display:none;}
+.settingsPanel.active{display:block;}
+.settingsPanel h3{color:#fff;font-size:20px;margin-bottom:18px;font-family:'Fredoka One',cursive;letter-spacing:1px;}
+
+.diffOption{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 18px;margin:9px 0;border-radius:12px;
+    background:rgba(255,255,255,0.05);cursor:pointer;
+    border:2px solid rgba(255,255,255,0.07);transition:0.2s;
+}
+.diffOption.selected{border-color:rgba(76,175,80,0.7);background:rgba(76,175,80,0.12);}
+.diffOption input{display:none;}
+.diffDot{width:20px;height:20px;border-radius:50%;border:3px solid rgba(255,255,255,0.3);flex-shrink:0;transition:0.2s;}
+.diffOption.selected .diffDot{border-color:#4CAF50;background:#4CAF50;}
+.diffLabel{color:#fff;font-size:18px;font-family:'Fredoka One',cursive;}
+.diffDesc{color:rgba(255,255,255,0.45);font-size:12px;margin-top:2px;}
+
+.soundRow{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;margin:7px 0;border-radius:11px;
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);
+}
+.soundRow.master{background:rgba(76,175,80,0.1);border-color:rgba(76,175,80,0.3);margin-bottom:14px;}
+.soundName{color:#fff;font-size:clamp(14px,3.2vw,16px);font-family:'Fredoka One',cursive;}
+.soundName span{font-size:11px;color:rgba(255,255,255,0.4);display:block;margin-top:1px;}
+.toggle{
+    position:relative;width:52px;height:28px;
+    background:#333;border-radius:28px;cursor:pointer;
+    transition:background 0.3s;flex-shrink:0;
+    border:1px solid rgba(255,255,255,0.1);
+}
+.toggle.on{background:linear-gradient(135deg,#4CAF50,#2e7d32);}
+.toggle::after{
+    content:'';position:absolute;width:20px;height:20px;
+    background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.3s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.4);
+}
+.toggle.on::after{left:28px;}
+
+/* ===== STORE ===== */
+#storeScreen{
+    position:absolute;inset:0;z-index:100;display:none;
+    flex-direction:column;align-items:center;
+    background:radial-gradient(ellipse at 50% 0%,#1a2744 0%,#0a0f1e 60%,#060810 100%);
+}
+#storeScreen::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:
+        radial-gradient(circle 300px at 20% 80%,rgba(76,175,80,0.06) 0%,transparent 70%),
+        radial-gradient(circle 250px at 80% 20%,rgba(41,182,246,0.06) 0%,transparent 70%);
+}
+#storeBody{
+    position:relative;z-index:1;
+    display:flex;flex-direction:column;align-items:center;
+    height:calc(100% - 62px);margin-top:62px;
+    width:100%;padding:12px 14px;overflow-y:auto;
+}
+#upperSkinDisplay{text-align:center;margin:8px 0 14px;}
+#upperSkinDisplay img{
+    width:min(38vw,130px);height:min(38vw,130px);
+    border-radius:18px;object-fit:cover;
+    border:3px solid #4CAF50;
+    box-shadow:0 0 0 5px rgba(76,175,80,0.15),0 8px 28px rgba(0,0,0,0.7);
+}
+#upperSkinDisplay .skinTitle{color:#fff;font-size:20px;font-family:'Fredoka One',cursive;margin-top:8px;letter-spacing:1px;}
+.skinRow{display:flex;gap:12px;width:100%;padding:8px 4px 12px;overflow-x:auto;scroll-behavior:smooth;}
+.skinRow::-webkit-scrollbar{height:4px;}
+.skinRow::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px;}
+.skinBox{
+    min-width:120px;flex-shrink:0;text-align:center;cursor:pointer;
+    position:relative;padding:10px;border-radius:14px;transition:0.2s;
+    background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.08);
+}
+.skinBox:active{transform:scale(0.96);}
+.skinBox.selected{border-color:#4CAF50;background:rgba(76,175,80,0.12);box-shadow:0 0 16px rgba(76,175,80,0.25);}
+.skinBox img{width:80px;height:80px;border-radius:10px;object-fit:cover;display:block;margin:0 auto;}
+.skinBox .sName{font-size:13px;color:#fff;margin:6px 0 2px;font-family:'Fredoka One',cursive;}
+.skinBox .sPrice{font-size:11px;color:rgba(255,255,255,0.45);}
+.lockOverlay{position:absolute;inset:0;border-radius:12px;background:rgba(0,0,0,0.72);display:flex;align-items:center;justify-content:center;font-size:30px;}
+#confirmSkinBtn{
+    padding:15px 44px;font-size:19px;border-radius:14px;
+    margin-top:12px;border:none;cursor:pointer;
+    font-family:'Fredoka One',cursive;letter-spacing:1px;transition:0.15s;
+    box-shadow:0 6px 0 rgba(0,0,0,0.4);
+}
+#confirmSkinBtn.unlocked{background:linear-gradient(160deg,#4CAF50,#2e7d32);color:#fff;}
+#confirmSkinBtn.unlocked:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,0.4);}
+#confirmSkinBtn.locked{background:#2a2a2a;color:#555;cursor:not-allowed;}
+
+/* ===== PAUSE BTN ===== */
+#pauseBtn{
+    position:absolute;right:14px;top:14px;display:none;z-index:50;
+    background:rgba(0,0,0,0.55);color:#fff;
+    padding:10px 16px;font-size:18px;
+    border:2px solid rgba(255,255,255,0.2);border-radius:12px;cursor:pointer;
+    font-family:'Fredoka One',cursive;backdrop-filter:blur(6px);transition:0.2s;
+}
+#pauseBtn:active{background:rgba(255,165,0,0.55);}
+
+/* ===== PAUSE OVERLAY ===== */
+#pauseOverlay{
+    position:absolute;inset:0;z-index:150;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);
+}
+#pauseOverlay h2{
+    font-family:'Fredoka One',cursive;font-size:clamp(38px,9vw,56px);
+    color:#FFD700;letter-spacing:4px;margin-bottom:36px;
+    text-shadow:3px 3px 0 #7a5800,0 0 30px rgba(255,215,0,0.4);
+}
+.pauseMenuBtn{
+    padding:16px 52px;font-size:clamp(18px,4vw,22px);
+    border:none;border-radius:14px;margin:9px;cursor:pointer;
+    font-family:'Fredoka One',cursive;letter-spacing:1px;
+    min-width:min(75vw,240px);transition:0.12s;
+}
+.pauseMenuBtn:active{transform:translateY(4px);}
+#pauseResumeBtn{background:linear-gradient(160deg,#4CAF50,#2e7d32);color:#fff;box-shadow:0 6px 0 #1b5e20;}
+#pauseHomeBtn{background:linear-gradient(160deg,#29b6f6,#0277bd);color:#fff;box-shadow:0 6px 0 #014f85;}
+
+/* ===== GAME OVER ===== */
+#gameOverOverlay{
+    position:absolute;inset:0;z-index:200;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;opacity:0;transition:opacity 0.7s;
+    background:rgba(0,0,0,0.86);backdrop-filter:blur(10px);
+}
+#gameOverOverlay h2{
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(38px,10vw,66px);
+    color:#ff4444;letter-spacing:4px;margin-bottom:8px;
+    text-shadow:4px 4px 0 #660000;animation:shake 0.45s ease;
+}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}60%{transform:translateX(8px);}}
+.newRecord{
+    font-family:'Fredoka One',cursive;color:#FFD700;
+    font-size:clamp(18px,4vw,22px);animation:pulse 0.55s infinite alternate;
+    display:none;margin-bottom:6px;text-shadow:0 0 14px rgba(255,215,0,0.6);
+}
+@keyframes pulse{0%{transform:scale(1);}100%{transform:scale(1.08);}}
+.scoreBoard{
+    background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.12);
+    border-radius:16px;padding:14px 44px;margin:8px;text-align:center;
+    min-width:min(70vw,200px);
+}
+.scoreBoard .label{font-size:13px;color:rgba(255,255,255,0.5);font-family:'Fredoka One',cursive;}
+.scoreBoard .val{font-size:42px;color:#FFD700;font-family:'Fredoka One',cursive;}
+.goBtn{
+    padding:15px 42px;font-size:clamp(18px,4vw,21px);
+    border:none;border-radius:14px;margin:7px;cursor:pointer;
+    font-family:'Fredoka One',cursive;letter-spacing:1px;
+    min-width:min(70vw,195px);transition:0.12s;
+}
+.goBtn:active{transform:translateY(4px);}
+#restartBtn{background:linear-gradient(160deg,#ff5722,#bf360c);color:#fff;box-shadow:0 6px 0 #7f1d08;}
+#homeBtn{background:linear-gradient(160deg,#29b6f6,#0277bd);color:#fff;box-shadow:0 6px 0 #014f85;}
+
+#madeBy{
+    position:absolute;bottom:12px;left:14px;font-size:12px;z-index:300;
+    color:rgba(255,255,255,0.75);font-family:'Fredoka One',cursive;
+    background:rgba(0,0,0,0.35);padding:4px 10px;border-radius:8px;
+}
 </style>
 </head>
 <body>
 
 <div id="splashScreen">
-    <img src="Picsart_26-03-19_22-39-08-547.jpg" alt="Splash Image" onerror="this.style.display='none';">
-    <button id="okBtn">OK</button>
+    <div id="splashGameTitle">🕹️ FLUPPY BIRD</div>
+    <div id="splashImgWrap">
+        <img src="Picsart_26-03-19_22-39-08-547.jpg" alt="Fluppy Bird">
+    </div>
+    <div id="splashMsg">⚠️ Agar game mein koi update aaya ho, toh ek baar page reload kar lo! 🔄</div>
+    <button id="okBtn">▶ OK, LET'S GO!</button>
 </div>
 
-<div id="titleScreen" style="display:none;">
+<div id="titleScreen">
     <h1>🕹️ Fluppy Bird</h1>
-    <button id="playBtn">Play Game</button>
-    <button id="settingsBtnMain">Settings</button>
-    <button id="storeBtn">Store</button>
+    <button id="playBtn" class="menuBtn">▶ Play Game</button>
+    <button id="settingsBtnMain" class="menuBtn">⚙️ Settings</button>
+    <button id="storeBtn" class="menuBtn">🛍️ Store</button>
 </div>
 
 <div id="settingsScreen">
-    <button class="backBtn" style="position:absolute; top:15px; left:15px; font-size:28px; background:transparent; color:orange; border:none; cursor:pointer;">&#8592;</button>
-    <div id="settingsLeft">
-        <h2 style="margin-bottom:30px;">⚙️ Settings</h2>
-        <button class="settingsTab active" data-tab="difficulty">Difficulty</button>
-        <button class="settingsTab" data-tab="sounds">Music/Sounds</button>
+    <div class="screenHeader">
+        <button class="backBtn" id="settingsBackBtn">← Back</button>
+        <h2>⚙️ Settings</h2>
     </div>
-    <div id="settingsRight">
-        <div id="difficultyOptions" class="active">
-            <h3>Select Difficulty</h3>
-            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Very Easy">  Very Easy</label>
-            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Normal">  Normal</label>
-            <label style="display:block; margin:15px; font-size:20px;"><input type="radio" name="difficulty" value="Hard">  Hard</label>
+    <div id="settingsBody">
+        <div id="settingsLeft">
+            <button class="settingsTab active" data-tab="difficulty">🎯 Difficulty</button>
+            <button class="settingsTab" data-tab="sounds">🔊 Sounds</button>
         </div>
-        <div id="soundOptions">
-            <h3>🔊 Sound Settings</h3>
-            <label>All Sounds <span class="minecraftToggle active" id="allSoundsToggle"></span></label>
-            <label>BG Music <span class="minecraftToggle active" id="bgMusicToggle"></span></label>
-            <label>Score Sound <span class="minecraftToggle active" id="scoreSoundToggle"></span></label>
-            <label>Bird Fly <span class="minecraftToggle active" id="flySoundToggle"></span></label>
-            <label>Countdown <span class="minecraftToggle active" id="countdownSoundToggle"></span></label>
-            <label>Buttons <span class="minecraftToggle active" id="buttonSoundToggle"></span></label>
-            <label>Game Over <span class="minecraftToggle active" id="gameoverSoundToggle"></span></label>
+        <div id="settingsRight">
+            <div class="settingsPanel active" id="difficultyPanel">
+                <h3>🎯 Select Difficulty</h3>
+                <label class="diffOption selected" id="diff_VeryEasy">
+                    <input type="radio" name="difficulty" value="Very Easy">
+                    <div class="diffDot"></div>
+                    <div><div class="diffLabel">😊 Very Easy</div><div class="diffDesc">Bada gap, slow speed</div></div>
+                </label>
+                <label class="diffOption" id="diff_Normal">
+                    <input type="radio" name="difficulty" value="Normal">
+                    <div class="diffDot"></div>
+                    <div><div class="diffLabel">😐 Normal</div><div class="diffDesc">Medium gap, normal speed</div></div>
+                </label>
+                <label class="diffOption" id="diff_Hard">
+                    <input type="radio" name="difficulty" value="Hard">
+                    <div class="diffDot"></div>
+                    <div><div class="diffLabel">😤 Hard</div><div class="diffDesc">Chota gap, fast speed</div></div>
+                </label>
+            </div>
+            <div class="settingsPanel" id="soundsPanel">
+                <h3>🔊 Sound Settings</h3>
+                <div class="soundRow master">
+                    <div class="soundName">🔊 All Sounds<span>Sab ek saath on/off</span></div>
+                    <div class="toggle on" id="tog_all"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">🎵 Background Music<span>Game mein chalti hai</span></div>
+                    <div class="toggle on" id="tog_bgmusic"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">🪙 Score Sound<span>Pipe cross karne pe</span></div>
+                    <div class="toggle on" id="tog_score"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">🐦 Bird Fly Sound<span>Tap karne pe</span></div>
+                    <div class="toggle on" id="tog_fly"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">⏳ Countdown Sound<span>3... 2... 1...</span></div>
+                    <div class="toggle on" id="tog_countdown"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">🟢 GO! Sound<span>Game start hone pe</span></div>
+                    <div class="toggle on" id="tog_go"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">🔘 Button Sound<span>Buttons dabane pe</span></div>
+                    <div class="toggle on" id="tog_button"></div>
+                </div>
+                <div class="soundRow">
+                    <div class="soundName">💀 Game Over Sound<span>Out hone pe</span></div>
+                    <div class="toggle on" id="tog_gameover"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="storeScreen">
-    <button class="backStoreBtn">&#8592;</button>
-    <h2>🛍️ Choose Your Skin</h2>
-    <div id="upperSkinDisplay"></div>
-    <div class="skinRow" id="skinRow"></div>
-    <button id="confirmSkinBtn" class="confirmBtn locked">Confirm Skin</button>
+    <div class="screenHeader">
+        <button class="backBtn" id="storeBackBtn">← Back</button>
+        <h2>🛍️ Skin Store</h2>
+    </div>
+    <div id="storeBody">
+        <div id="upperSkinDisplay"></div>
+        <div class="skinRow" id="skinRow"></div>
+        <button id="confirmSkinBtn" class="locked">✅ Confirm Skin</button>
+    </div>
 </div>
 
 <canvas id="gameCanvas"></canvas>
 <button id="pauseBtn">⏸ Pause</button>
-<button id="pauseResumeBtn">▶ Resume</button>
-<button id="pauseHomeBtn">🏠 Home</button>
-<button id="restartBtn">🔄 Restart</button>
-<button id="homeBtn">🏠 Home</button>
+
+<div id="pauseOverlay">
+    <h2>⏸ PAUSED</h2>
+    <button id="pauseResumeBtn" class="pauseMenuBtn">▶ Resume</button>
+    <button id="pauseHomeBtn" class="pauseMenuBtn">🏠 Home</button>
+</div>
+
 <div id="gameOverOverlay">
     <h2>GAME OVER</h2>
-    <div style="font-size:48px; margin:20px;">Final Score: <span id="finalScore">0</span></div>
+    <div class="newRecord" id="newRecord">🏆 NEW RECORD!</div>
+    <div class="scoreBoard"><div class="label">Final Score</div><div class="val" id="finalScore">0</div></div>
+    <div class="scoreBoard"><div class="label">Best Score</div><div class="val" id="bestScore">0</div></div>
+    <button id="restartBtn" class="goBtn">🔄 Restart</button>
+    <button id="homeBtn" class="goBtn">🏠 Home</button>
 </div>
+
 <div id="madeBy">Made by TROLLHUNTER 🚀</div>
 
 <script>
-const birdImages = {};
-const skins = [
-    {name:"Bird", file:"Picsart_26-02-26_17-30-25-252.png", unlockScore:0, pipeColor:"#00c853", groundColor:"#8B4513"},
-    {name:"Mango Bird", file:"Picsart_26-02-27_01-28-33-302.png", unlockScore:10, pipeColor:"#FFA500", groundColor:"#FFCC80"},
-    {name:"Happy Perrot", file:"Picsart_26-02-27_10-16-34-761.png", unlockScore:20, pipeColor:"#ff4081", groundColor:"#f48fb1"},
-    {name:"Angry Bird", file:"Picsart_26-02-27_10-15-45-688.png", unlockScore:30, pipeColor:"#ff1744", groundColor:"#d50000"},
-    {name:"Crow", file:"Picsart_26-02-27_20-37-59-368.png", unlockScore:50, pipeColor:"#333333", groundColor:"#555555"}
+const skins=[
+    {name:"Bird",         file:"Picsart_26-02-26_17-30-25-252.png",  unlockScore:0,  pipeColor:"#00c853",groundColor:"#5D4037"},
+    {name:"Mango Bird",   file:"Picsart_26-02-27_01-28-33-302.png",  unlockScore:10, pipeColor:"#FFA500",groundColor:"#BF6F00"},
+    {name:"Happy Perrot", file:"Picsart_26-02-27_10-16-34-761.png",  unlockScore:20, pipeColor:"#ff4081",groundColor:"#880040"},
+    {name:"Angry Bird",   file:"Picsart_26-02-27_10-15-45-688.png",  unlockScore:30, pipeColor:"#ff1744",groundColor:"#7f0000"},
+    {name:"Crow",         file:"Picsart_26-02-27_20-37-59-368.png",  unlockScore:50, pipeColor:"#424242",groundColor:"#212121"}
 ];
+const birdImages={};
 
-// Audio Manager
-const audio = {
-    countdown: new Audio('countdown_sound.mp3'),
-    go: new Audio('Go_sound.mp3'),
-    fly: new Audio('bird_fly_sound.mp3'),
-    button: new Audio('bottons_sound.mp3'),
-    score: new Audio('coine_sound.mp3'),
-    gameover: new Audio('game_over_sound.mp3'),
-    bgmusic: new Audio('game_bg_sound.mp3')
+const audio={
+    countdown:new Audio('countdown_sound.mp3'),
+    go:new Audio('Go_sound.mp3'),
+    fly:new Audio('bird_fly_sound.mp3'),
+    button:new Audio('bottons_sound.mp3'),
+    score:new Audio('coine_sound.mp3'),
+    gameover:new Audio('game_over_sound.mp3'),
+    bgmusic:new Audio('game_bg_sound.mp3')
 };
-audio.bgmusic.loop = true;
+audio.bgmusic.loop=true;
 
-// Sound settings
-let soundSettings = JSON.parse(localStorage.getItem("fluppySoundSettings")) || {
-    all: true, bgmusic: true, score: true, fly: true, countdown: true, button: true, gameover: true
-};
+let soundSettings=JSON.parse(localStorage.getItem("fluppySoundSettings3"))||{all:true,bgmusic:true,score:true,fly:true,countdown:true,go:true,button:true,gameover:true};
 
-function playSound(soundName) {
-    if (!soundSettings.all || !soundSettings[soundName]) return;
-    audio[soundName].currentTime = 0;
-    audio[soundName].play().catch(() => {});
+function playSound(name){
+    if(!soundSettings.all||!soundSettings[name])return;
+    const a=audio[name];if(!a)return;
+    a.currentTime=0;a.play().catch(()=>{});
 }
-
-function toggleAudio(elementId, settingName) {
-    soundSettings[settingName] = !soundSettings[settingName];
-    document.getElementById(elementId).classList.toggle('active');
-    localStorage.setItem("fluppySoundSettings", JSON.stringify(soundSettings));
-    if (settingName === 'all') {
-        Object.keys(soundSettings).forEach(key => {
-            if (key !== 'all') soundSettings[key] = soundSettings.all;
-        });
-        updateAllToggles();
-    }
-}
-
-function updateAllToggles() {
-    Object.keys(soundSettings).forEach(key => {
-        if (key !== 'all') {
-            const toggle = document.getElementById(key + 'Toggle');
-            if (toggle) {
-                toggle.classList.toggle('active', soundSettings[key]);
-            }
-        }
+function syncToggles(){
+    Object.keys(soundSettings).forEach(k=>{
+        const el=document.getElementById('tog_'+k);
+        if(el)el.classList.toggle('on',soundSettings[k]);
     });
 }
+function saveSound(){localStorage.setItem("fluppySoundSettings3",JSON.stringify(soundSettings));}
 
-function preloadImages() {
-    return Promise.all(skins.map(skin => {
-        return new Promise((resolve) => {
-            birdImages[skin.name] = new Image();
-            birdImages[skin.name].onload = resolve;
-            birdImages[skin.name].onerror = () => {
-                birdImages[skin.name] = null;
-                resolve();
-            };
-            birdImages[skin.name].src = skin.file;
-        });
-    }));
-}
-
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-function resizeCanvas() { 
-    canvas.width = window.innerWidth; 
-    canvas.height = window.innerHeight; 
-}
+const canvas=document.getElementById("gameCanvas");
+const ctx=canvas.getContext("2d");
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
 resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize",resizeCanvas);
 
-let gameState = { 
-    bird: {x:100,y:200,width:60,height:60,velocity:0,rotation:0}, 
-    gravity: 0.4,
-    pipes:[],
-    score:0, 
+const gapSizes={"Very Easy":310,"Normal":255,"Hard":195};
+const baseSpeeds={"Very Easy":2.0,"Normal":2.5,"Hard":3.0};
+
+let gs={
+    bird:{x:0,y:0,w:62,h:62,vy:0,rot:0},
+    gravity:0.38,pipes:[],score:0,
     highScore:parseInt(localStorage.getItem("fluppyHighScore"))||0,
-    gameOver:false, 
-    gameStarted:false, 
-    paused:false, 
-    basePipeSpeed:2.5,
-    currentPipeSpeed:2.5,
-    maxPipeSpeed:5,
-    difficulty:"Normal", 
-    animationId:null,
-    pipeSpacing: 420,
-    nextPipeDistance: 420,
-    speedProgress: 0
+    gameOver:false,gameStarted:false,paused:false,
+    pipeSpeed:2.5,maxPipeSpeed:5.5,
+    nextPipeDist:430,pipeSpacing:430,
+    difficulty:"Normal",animId:null
 };
 
-let skinData = JSON.parse(localStorage.getItem("fluppySkins")) || {};
-skins.forEach(s => { if (!skinData[s.name]) skinData[s.name] = {unlocked: s.unlockScore === 0}; });
-let selectedSkinName = localStorage.getItem("selectedSkin") || "Bird";
-let selectedSkin = skins.find(s => s.name === selectedSkinName);
+let skinData=JSON.parse(localStorage.getItem("fluppySkins3"))||{};
+skins.forEach(s=>{if(!skinData[s.name])skinData[s.name]={unlocked:s.unlockScore===0};});
+let selectedSkin=skins.find(s=>s.name===(localStorage.getItem("selectedSkin3")||"Bird"))||skins[0];
+let previewSkin=selectedSkin;
 
-const elements = {
-    splashScreen: document.getElementById("splashScreen"),
-    okBtn: document.getElementById("okBtn"),
-    playBtn: document.getElementById("playBtn"),
-    settingsBtnMain: document.getElementById("settingsBtnMain"),
-    storeBtn: document.getElementById("storeBtn"),
-    backBtn: document.querySelector(".backBtn"),
-    backStoreBtn: document.querySelector(".backStoreBtn"),
-    pauseBtn: document.getElementById("pauseBtn"),
-    pauseResumeBtn: document.getElementById("pauseResumeBtn"),
-    pauseHomeBtn: document.getElementById("pauseHomeBtn"),
-    restartBtn: document.getElementById("restartBtn"),
-    homeBtn: document.getElementById("homeBtn"),
-    confirmSkinBtn: document.getElementById("confirmSkinBtn"),
-    upperSkinDisplay: document.getElementById("upperSkinDisplay"),
-    skinRow: document.getElementById("skinRow"),
-    titleScreen: document.getElementById("titleScreen"),
-    settingsScreen: document.getElementById("settingsScreen"),
-    storeScreen: document.getElementById("storeScreen"),
-    gameOverOverlay: document.getElementById("gameOverOverlay"),
-    finalScore: document.getElementById("finalScore")
-};
+function preloadImages(){
+    return Promise.all(skins.map(skin=>new Promise(res=>{
+        birdImages[skin.name]=new Image();
+        birdImages[skin.name].onload=res;
+        birdImages[skin.name].onerror=()=>{birdImages[skin.name]=null;res();};
+        birdImages[skin.name].src=skin.file;
+    })));
+}
 
-const gapSizes = {
-    "Very Easy": 320,
-    "Normal": 260,
-    "Hard": 200
-};
-
-async function init() {
+async function init(){
     await preloadImages();
-    const savedDifficulty = localStorage.getItem("fluppyDifficulty") || "Normal";
-    gameState.difficulty = savedDifficulty;
-    document.querySelector(`input[name="difficulty"][value="${savedDifficulty}"]`).checked = true;
-    
-    // Load sound settings
-    Object.keys(soundSettings).forEach(key => {
-        const toggle = document.getElementById(key + 'Toggle');
-        if (toggle) toggle.classList.toggle('active', soundSettings[key]);
+    const saved=localStorage.getItem("fluppyDifficulty3")||"Normal";
+    gs.difficulty=saved;gs.pipeSpeed=baseSpeeds[saved];
+    document.querySelectorAll('.diffOption').forEach(opt=>{
+        const v=opt.querySelector('input').value,sel=(v===saved);
+        opt.classList.toggle('selected',sel);
+        if(sel){opt.querySelector('input').checked=true;opt.querySelector('.diffDot').style.background='#4CAF50';}
     });
-    
-    if (soundSettings.bgmusic) audio.bgmusic.play().catch(() => {});
+    syncToggles();
+    document.getElementById('titleScreen').style.display="flex";
+    if(soundSettings.bgmusic&&soundSettings.all)audio.bgmusic.play().catch(()=>{});
 }
 
-elements.okBtn.onclick = () => { playSound('button'); elements.splashScreen.style.opacity = "0"; setTimeout(() => {
-    elements.splashScreen.style.display = "none";
-    elements.titleScreen.style.display = "flex";
-}, 500); };
-
-function initGame() {
-    gameState.bird = {x:100,y:200,width:60,height:60,velocity:0,rotation:0};
-    gameState.gravity = 0.4;
-    gameState.pipes = [];
-    gameState.score = 0;
-    gameState.gameOver = false;
-    gameState.paused = false;
-    gameState.gameStarted = false;
-    gameState.currentPipeSpeed = {"Very Easy":2.0,"Normal":2.5,"Hard":3.0}[gameState.difficulty];
-    gameState.basePipeSpeed = gameState.currentPipeSpeed;
-    gameState.nextPipeDistance = gameState.pipeSpacing;
-    gameState.speedProgress = 0;
+function initGame(){
+    gs.bird={x:110,y:canvas.height/2-30,w:62,h:62,vy:0,rot:0};
+    gs.pipes=[];gs.score=0;
+    gs.gameOver=false;gs.paused=false;gs.gameStarted=false;
+    gs.pipeSpeed=baseSpeeds[gs.difficulty];
+    gs.nextPipeDist=gs.pipeSpacing;
 }
 
-function createPerfectPipe() {
-    const gapSize = gapSizes[gameState.difficulty];
-    const minHeight = 120;
-    const maxHeight = canvas.height - gapSize - minHeight - 80;
-    const pipeTopHeight = Math.random() * (maxHeight - minHeight) + minHeight;
-    
-    const pipe = {
-        x: canvas.width,
-        width: 70,
-        topHeight: pipeTopHeight,
-        gapSize: gapSize,
-        bottomHeight: canvas.height - pipeTopHeight - gapSize - 70,
-        passed: false,
-        scored: false
-    };
-    
-    gameState.pipes.push(pipe);
+function createPipe(){
+    const gap=gapSizes[gs.difficulty];
+    const minH=90,maxH=canvas.height-gap-minH-75;
+    const topH=Math.random()*(maxH-minH)+minH;
+    gs.pipes.push({x:canvas.width,w:72,topH,gap,botH:canvas.height-topH-gap-75,scored:false});
 }
 
-function updatePipeSpawning() {
-    gameState.nextPipeDistance -= gameState.currentPipeSpeed;
-    if (gameState.nextPipeDistance <= 0) {
-        createPerfectPipe();
-        gameState.nextPipeDistance = gameState.pipeSpacing;
-    }
-}
-
-function startGame() {
-    playSound('button');
-    if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
-    
-    [elements.titleScreen, elements.settingsScreen, elements.storeScreen].forEach(el => el.style.display = "none");
-    [elements.restartBtn, elements.homeBtn, elements.pauseBtn, elements.pauseResumeBtn, elements.pauseHomeBtn].forEach(el => el.style.display = "none");
-    
-    initGame();
-    
-    let countdown = ["3","2","1","GO!"];
-    let countIndex = 0;
-    const overlay = document.createElement("div");
-    overlay.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:140px;color:yellow;text-shadow:4px 4px 0 black;background:rgba(0,0,0,0.7);z-index:1000;font-weight:bold;`;
-    document.body.appendChild(overlay);
-    
-    const interval = setInterval(() => {
-        overlay.textContent = countdown[countIndex];
-        if (countIndex < 3) playSound('countdown');
-        countIndex++;
-        if (countIndex >= countdown.length) {
-            clearInterval(interval);
-            playSound('go');
-            document.body.removeChild(overlay);
-            elements.pauseBtn.style.display = "block";
-            gameState.gameStarted = true;
-            gameLoop();
+function drawBG(){
+    const phase=Math.floor(gs.score/5)%2;
+    if(phase===0){
+        const sky=ctx.createLinearGradient(0,0,0,canvas.height*0.8);
+        sky.addColorStop(0,'#5bc8f5');sky.addColorStop(1,'#c8eeff');
+        ctx.fillStyle=sky;ctx.fillRect(0,0,canvas.width,canvas.height);
+        // Sun
+        const sgx=canvas.width-110,sgy=88;
+        const grd=ctx.createRadialGradient(sgx,sgy,10,sgx,sgy,75);
+        grd.addColorStop(0,'rgba(255,240,100,0.45)');grd.addColorStop(1,'rgba(255,240,100,0)');
+        ctx.fillStyle=grd;ctx.fillRect(sgx-75,sgy-75,150,150);
+        ctx.fillStyle='#FFD700';ctx.beginPath();ctx.arc(sgx,sgy,40,0,Math.PI*2);ctx.fill();
+        // Clouds
+        function cloud(cx,cy,s){
+            ctx.fillStyle='rgba(255,255,255,0.82)';ctx.beginPath();
+            ctx.arc(cx,cy,30*s,0,Math.PI*2);ctx.arc(cx+32*s,cy-10*s,24*s,0,Math.PI*2);ctx.arc(cx+58*s,cy,26*s,0,Math.PI*2);ctx.fill();
         }
-    }, 700);
-}
-
-function endGame() {
-    playSound('gameover');
-    gameState.gameOver = true;
-    if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
-    
-    if (gameState.score > gameState.highScore) {
-        gameState.highScore = gameState.score;
-        localStorage.setItem("fluppyHighScore", gameState.highScore);
-    }
-    
-    elements.finalScore.textContent = gameState.score;
-    elements.gameOverOverlay.style.opacity = "0";
-    elements.gameOverOverlay.style.display = "flex";
-    
-    setTimeout(() => {
-        elements.gameOverOverlay.style.opacity = "1";
-        elements.restartBtn.style.display = "block";
-        elements.homeBtn.style.display = "block";
-        elements.pauseBtn.style.display = "none";
-    }, 1500);
-    
-    skins.forEach(s => { 
-        if (gameState.score >= s.unlockScore) {
-            skinData[s.name] = skinData[s.name] || {};
-            skinData[s.name].unlocked = true; 
-        }
-    });
-    localStorage.setItem("fluppySkins", JSON.stringify(skinData));
-}
-
-function gameLoop() {
-    gameState.animationId = requestAnimationFrame(gameLoop);
-    
-    if (!gameState.gameStarted || gameState.gameOver || gameState.paused) return;
-    
-    gameState.speedProgress += gameState.currentPipeSpeed * 2;
-    if (gameState.speedProgress >= 100) {
-        gameState.speedProgress -= 100;
-    }
-    const displaySpeed = Math.floor(gameState.score * 100 + gameState.speedProgress);
-    
-    gameState.bird.velocity += gameState.gravity;
-    gameState.bird.y += gameState.bird.velocity;
-    gameState.bird.rotation = Math.min(gameState.bird.velocity * 3, 25);
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (Math.floor(gameState.score / 5) % 2 === 0) {
-        ctx.fillStyle = "skyblue"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#FFD700"; ctx.beginPath(); ctx.arc(canvas.width-120,100,45,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.beginPath(); ctx.arc(120,canvas.height-130,35,0,Math.PI*2); ctx.arc(150,canvas.height-150,45,0,Math.PI*2); ctx.arc(180,canvas.height-130,35,0,Math.PI*2); ctx.fill();
+        cloud(90,75,1);cloud(280,55,1.2);cloud(520,90,0.9);cloud(750,65,1.1);
     } else {
-        ctx.fillStyle = "#1a1a2e"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white"; for (let i = 0; i < 40; i++) ctx.fillRect((i * 37) % canvas.width, (i * 23) % (canvas.height/2), 2, 2);
-        ctx.fillStyle = "#ffffcc"; ctx.beginPath(); ctx.arc(canvas.width-120,100,40,0,Math.PI*2); ctx.fill();
-    }
-    
-    updatePipeSpawning();
-    
-    for (let i = gameState.pipes.length - 1; i >= 0; i--) {
-        let pipe = gameState.pipes[i];
-        pipe.x -= gameState.currentPipeSpeed;
-        
-        ctx.fillStyle = selectedSkin.pipeColor;
-        ctx.fillRect(pipe.x, 0, pipe.width, pipe.topHeight);
-        ctx.fillRect(pipe.x, canvas.height - pipe.bottomHeight - 70, pipe.width, pipe.bottomHeight);
-        
-        if (gameState.bird.x < pipe.x + pipe.width &&
-            gameState.bird.x + gameState.bird.width > pipe.x &&
-            (gameState.bird.y < pipe.topHeight || 
-             gameState.bird.y + gameState.bird.height > canvas.height - pipe.bottomHeight - 70)) {
-            endGame();
-            return;
+        const sky=ctx.createLinearGradient(0,0,0,canvas.height*0.7);
+        sky.addColorStop(0,'#060d1f');sky.addColorStop(1,'#0d1b35');
+        ctx.fillStyle=sky;ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='#fff';
+        for(let i=0;i<70;i++){
+            const sx=(i*137+23)%canvas.width,sy=(i*79+11)%(canvas.height*0.6);
+            const ss=(i%4===0)?1.8:0.9,op=0.4+0.5*Math.sin(i*0.7+(Date.now()/2000));
+            ctx.globalAlpha=op;ctx.fillRect(sx,sy,ss,ss);
         }
-        
-        if (!pipe.scored && pipe.x + pipe.width < gameState.bird.x) {
-            gameState.score++;
-            pipe.scored = true;
-            playSound('score');
-            gameState.currentPipeSpeed = Math.min(gameState.currentPipeSpeed + 0.04, gameState.maxPipeSpeed);
-        }
-        
-        if (pipe.x + pipe.width < -50) {
-            gameState.pipes.splice(i, 1);
-        }
+        ctx.globalAlpha=1;
+        const mx=canvas.width-110,my=88;
+        const mg=ctx.createRadialGradient(mx,my,8,mx,my,60);
+        mg.addColorStop(0,'rgba(255,255,200,0.22)');mg.addColorStop(1,'rgba(255,255,200,0)');
+        ctx.fillStyle=mg;ctx.fillRect(mx-60,my-60,120,120);
+        ctx.fillStyle='#fffff0';ctx.beginPath();ctx.arc(mx,my,35,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#0a1428';ctx.beginPath();ctx.arc(mx+12,my-8,27,0,Math.PI*2);ctx.fill();
     }
-    
-    const groundHeight = 70;
-    ctx.fillStyle = selectedSkin.groundColor;
-    ctx.fillRect(0, canvas.height-groundHeight, canvas.width, groundHeight);
-    
-    if (gameState.bird.y + gameState.bird.height > canvas.height-groundHeight || gameState.bird.y < 0) {
-        endGame();
-        return;
-    }
-    
+}
+
+function drawPipe(p){
+    const pc=selectedSkin.pipeColor;
+    ctx.fillStyle=pc;
+    ctx.fillRect(p.x,0,p.w,p.topH);
+    ctx.fillRect(p.x,canvas.height-p.botH-75,p.w,p.botH);
+    ctx.fillRect(p.x-7,p.topH-24,p.w+14,24);
+    ctx.fillRect(p.x-7,canvas.height-p.botH-75,p.w+14,24);
+    ctx.fillStyle='rgba(255,255,255,0.18)';
+    ctx.fillRect(p.x+6,0,11,p.topH-24);
+    ctx.fillRect(p.x+6,canvas.height-p.botH-75+24,11,p.botH-24);
+    ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.fillRect(p.x+p.w-10,0,10,p.topH);
+    ctx.fillRect(p.x+p.w-10,canvas.height-p.botH-75,10,p.botH);
+}
+
+function drawBird(){
     ctx.save();
-    ctx.translate(gameState.bird.x + gameState.bird.width/2, gameState.bird.y + gameState.bird.height/2);
-    ctx.rotate(gameState.bird.rotation * Math.PI / 180);
-    if (birdImages[selectedSkin.name]) {
-        ctx.drawImage(birdImages[selectedSkin.name], -gameState.bird.width/2, -gameState.bird.height/2, gameState.bird.width, gameState.bird.height);
+    ctx.translate(gs.bird.x+gs.bird.w/2,gs.bird.y+gs.bird.h/2);
+    ctx.rotate(gs.bird.rot*Math.PI/180);
+    const img=birdImages[selectedSkin.name];
+    if(img){
+        ctx.drawImage(img,-gs.bird.w/2,-gs.bird.h/2,gs.bird.w,gs.bird.h);
     } else {
-                ctx.font = "bold 50px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillStyle = "orange";
-        ctx.fillText("🦜", 0, 0);
+        ctx.fillStyle='#FFD700';
+        ctx.beginPath();ctx.arc(0,0,gs.bird.w/2,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ff5722';
+        ctx.beginPath();ctx.moveTo(gs.bird.w/2-4,0);ctx.lineTo(gs.bird.w/2+10,-6);ctx.lineTo(gs.bird.w/2+10,6);ctx.fill();
     }
     ctx.restore();
-    
-    // UI - Score display
-    ctx.fillStyle = "black"; 
-    ctx.font = "bold 32px Arial"; 
-    ctx.textAlign = "left";
-    ctx.fillText(`Score: ${gameState.score}`, 25, 60);
-    ctx.fillText(`High: ${gameState.highScore}`, 25, 105);
-    ctx.fillText(`Speed: ${displaySpeed}`, 25, 145);
 }
 
-function jump() { 
-    if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) { 
-        gameState.bird.velocity = -7.5;
-        gameState.bird.rotation = -25;
-        playSound('fly');
-    } 
+function drawGround(){
+    const gh=75,gc=selectedSkin.groundColor;
+    ctx.fillStyle=gc;ctx.fillRect(0,canvas.height-gh,canvas.width,gh);
+    ctx.fillStyle='rgba(0,0,0,0.1)';
+    for(let i=0;i<canvas.width;i+=40)ctx.fillRect(i,canvas.height-gh+5,20,2);
+    ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillRect(0,canvas.height-gh,canvas.width,5);
 }
 
-document.addEventListener("click", (e) => {
-    const menus = ['titleScreen', 'settingsScreen', 'storeScreen'];
-    if (!menus.some(id => e.target.closest('#' + id))) jump();
-});
-document.addEventListener("touchstart", e => { e.preventDefault(); jump(); });
-document.addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); jump(); } });
+function roundRect(c,x,y,w,h,r){
+    c.beginPath();c.moveTo(x+r,y);
+    c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+    c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);
+    c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+}
 
-// Settings tabs
-document.querySelectorAll('.settingsTab').forEach(tab => {
-    tab.onclick = () => {
+function drawHUD(){
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.45)';roundRect(ctx,14,14,200,115,12);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1.5;roundRect(ctx,14,14,200,115,12);ctx.stroke();
+    ctx.font="bold 25px 'Fredoka One',cursive";ctx.textAlign='left';
+    ctx.fillStyle='rgba(255,255,255,0.92)';ctx.fillText(`Score: ${gs.score}`,28,50);
+    ctx.fillStyle='rgba(255,215,0,0.92)';ctx.fillText(`Best:  ${gs.highScore}`,28,83);
+    ctx.fillStyle='rgba(150,220,255,0.92)';ctx.fillText(`Speed: ${(gs.pipeSpeed*40).toFixed(0)}`,28,116);
+    ctx.restore();
+}
+
+// ===== GAME LOOP =====
+function gameLoop(){
+    gs.animId=requestAnimationFrame(gameLoop);
+    if(!gs.gameStarted||gs.gameOver||gs.paused)return;
+
+    gs.bird.vy+=gs.gravity;
+    gs.bird.y+=gs.bird.vy;
+    gs.bird.rot=Math.min(gs.bird.vy*3.2,32);
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawBG();
+
+    gs.nextPipeDist-=gs.pipeSpeed;
+    if(gs.nextPipeDist<=0){createPipe();gs.nextPipeDist=gs.pipeSpacing;}
+
+    for(let i=gs.pipes.length-1;i>=0;i--){
+        const p=gs.pipes[i];
+        p.x-=gs.pipeSpeed;
+        drawPipe(p);
+        const bx=gs.bird.x+10,by=gs.bird.y+10,bw=gs.bird.w-20,bh=gs.bird.h-20;
+        if(bx<p.x+p.w&&bx+bw>p.x){
+            if(by<p.topH||by+bh>canvas.height-p.botH-75){endGame();return;}
+        }
+        if(!p.scored&&p.x+p.w<gs.bird.x){
+            gs.score++;p.scored=true;
+            playSound('score');
+            gs.pipeSpeed=Math.min(gs.pipeSpeed+0.05,gs.maxPipeSpeed);
+        }
+        if(p.x+p.w<-90)gs.pipes.splice(i,1);
+    }
+
+    drawGround();
+    if(gs.bird.y+gs.bird.h>canvas.height-75||gs.bird.y<0){endGame();return;}
+    drawBird();
+    drawHUD();
+}
+
+function jump(){
+    if(gs.gameStarted&&!gs.gameOver&&!gs.paused){
+        gs.bird.vy=-7.5;gs.bird.rot=-25;playSound('fly');
+    }
+}
+
+const allScreens=['titleScreen','settingsScreen','storeScreen'];
+function hideAllScreens(){allScreens.forEach(id=>document.getElementById(id).style.display="none");}
+function showScreen(id){
+    hideAllScreens();
+    const el=document.getElementById(id);
+    el.style.display=(id==='settingsScreen')?"block":"flex";
+}
+
+function startGame(){
+    playSound('button');
+    if(gs.animId)cancelAnimationFrame(gs.animId);
+    hideAllScreens();
+    document.getElementById('gameOverOverlay').style.display="none";
+    document.getElementById('pauseOverlay').style.display="none";
+    document.getElementById('pauseBtn').style.display="none";
+    initGame();
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawBG();drawGround();drawBird();
+
+    const cdDiv=document.createElement("div");
+    cdDiv.id="countdownDiv";
+    cdDiv.style.cssText=`position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);font-family:'Fredoka One',cursive;font-size:clamp(90px,20vw,150px);color:#FFD700;text-shadow:4px 4px 0 #000,0 0 40px rgba(255,215,0,0.5);letter-spacing:4px;transition:transform 0.12s;`;
+    document.body.appendChild(cdDiv);
+
+    const steps=["3","2","1","GO!"];
+    let idx=0;
+    function tick(){
+        cdDiv.textContent=steps[idx];
+        cdDiv.style.transform="scale(1.25)";
+        setTimeout(()=>cdDiv.style.transform="scale(1)",140);
+        if(idx<3)playSound('countdown');else playSound('go');
+        idx++;
+        if(idx<steps.length){setTimeout(tick,750);}
+        else{
+            setTimeout(()=>{
+                if(document.body.contains(cdDiv))document.body.removeChild(cdDiv);
+                document.getElementById('pauseBtn').style.display="block";
+                gs.gameStarted=true;
+                gameLoop();
+            },650);
+        }
+    }
+    tick();
+}
+
+function endGame(){
+    playSound('gameover');
+    gs.gameOver=true;
+    if(gs.animId)cancelAnimationFrame(gs.animId);
+    document.getElementById('pauseBtn').style.display="none";
+    let isNew=false;
+    if(gs.score>gs.highScore){gs.highScore=gs.score;localStorage.setItem("fluppyHighScore",gs.highScore);isNew=true;}
+    skins.forEach(s=>{if(gs.score>=s.unlockScore){if(!skinData[s.name])skinData[s.name]={};skinData[s.name].unlocked=true;}});
+    localStorage.setItem("fluppySkins3",JSON.stringify(skinData));
+    document.getElementById('finalScore').textContent=gs.score;
+    document.getElementById('bestScore').textContent=gs.highScore;
+    document.getElementById('newRecord').style.display=isNew?"block":"none";
+    const gov=document.getElementById('gameOverOverlay');
+    gov.style.display="flex";gov.style.opacity="0";
+    setTimeout(()=>gov.style.opacity="1",30);
+}
+
+function isUI(t){
+    return t.closest('button')||t.closest('#titleScreen')||t.closest('#settingsScreen')||
+           t.closest('#storeScreen')||t.closest('#pauseOverlay')||t.closest('#gameOverOverlay')||
+           t.closest('#splashScreen')||t.closest('#countdownDiv');
+}
+document.addEventListener("click",e=>{if(!isUI(e.target))jump();});
+document.addEventListener("touchstart",e=>{if(!isUI(e.target)){e.preventDefault();jump();}},{passive:false});
+document.addEventListener("keydown",e=>{if(e.code==="Space"){e.preventDefault();jump();}});
+
+document.getElementById('okBtn').onclick=()=>{
+    playSound('button');
+    const s=document.getElementById('splashScreen');
+    s.style.opacity="0";
+    setTimeout(()=>{
+        s.style.display="none";showScreen('titleScreen');
+        if(soundSettings.bgmusic&&soundSettings.all)audio.bgmusic.play().catch(()=>{});
+    },500);
+};
+
+document.getElementById('playBtn').onclick=()=>startGame();
+document.getElementById('settingsBtnMain').onclick=()=>{playSound('button');showScreen('settingsScreen');};
+document.getElementById('storeBtn').onclick=()=>{playSound('button');previewSkin=selectedSkin;showScreen('storeScreen');renderSkins();};
+document.getElementById('settingsBackBtn').onclick=()=>{playSound('button');showScreen('titleScreen');};
+
+document.querySelectorAll('.settingsTab').forEach(tab=>{
+    tab.onclick=()=>{
         playSound('button');
-        document.querySelectorAll('.settingsTab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.settingsTab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.settingsPanel').forEach(p=>p.classList.remove('active'));
         tab.classList.add('active');
-        document.querySelectorAll('#settingsRight > div').forEach(div => div.classList.remove('active'));
-        document.getElementById(tab.dataset.tab + 'Options').classList.add('active');
+        document.getElementById(tab.dataset.tab+'Panel').classList.add('active');
     };
 });
 
-// Sound toggles
-['allSounds', 'bgMusic', 'score', 'fly', 'countdown', 'button', 'gameover'].forEach(id => {
-    const toggle = document.getElementById(id + 'Toggle');
-    if (toggle) {
-        toggle.onclick = () => toggleAudio(id, id === 'allSounds' ? 'all' : id);
-    }
-});
-
-elements.playBtn.onclick = startGame;
-elements.settingsBtnMain.onclick = () => { playSound('button'); elements.titleScreen.style.display = "none"; elements.settingsScreen.style.display = "flex"; };
-elements.backBtn.onclick = () => { playSound('button'); elements.settingsScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
-elements.storeBtn.onclick = () => { playSound('button'); elements.titleScreen.style.display = "none"; elements.storeScreen.style.display = "flex"; renderSkins(); };
-elements.backStoreBtn.onclick = () => { playSound('button'); elements.storeScreen.style.display = "none"; elements.titleScreen.style.display = "flex"; };
-
-document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
-    radio.onchange = () => {
+document.querySelectorAll('.diffOption').forEach(opt=>{
+    opt.onclick=()=>{
         playSound('button');
-        gameState.difficulty = radio.value;
-        gameState.currentPipeSpeed = {"Very Easy":2.0,"Normal":2.5,"Hard":3.0}[radio.value];
-        gameState.basePipeSpeed = gameState.currentPipeSpeed;
-        localStorage.setItem("fluppyDifficulty", radio.value);
+        const v=opt.querySelector('input').value;
+        document.querySelectorAll('.diffOption').forEach(o=>{o.classList.remove('selected');o.querySelector('.diffDot').style.background='';});
+        opt.classList.add('selected');opt.querySelector('input').checked=true;opt.querySelector('.diffDot').style.background='#4CAF50';
+        gs.difficulty=v;gs.pipeSpeed=baseSpeeds[v];
+        localStorage.setItem("fluppyDifficulty3",v);
     };
 });
 
-function renderSkins() {
-    playSound('button');
-    elements.skinRow.innerHTML = "";
-    elements.upperSkinDisplay.innerHTML = "";
-    
-    const previewImg = document.createElement("img");
-    previewImg.src = selectedSkin.file;
-    previewImg.onerror = () => previewImg.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZhbGxiYWNrPC90ZXh0Pjwvc3ZnPg==";
-    elements.upperSkinDisplay.appendChild(previewImg);
+document.querySelectorAll('.toggle').forEach(tog=>{
+    tog.onclick=()=>{
+        const k=tog.id.replace('tog_','');
+        soundSettings[k]=!soundSettings[k];
+        tog.classList.toggle('on',soundSettings[k]);
+        if(k==='all'){
+            const v=soundSettings.all;
+            Object.keys(soundSettings).forEach(key=>soundSettings[key]=v);
+            syncToggles();
+            if(!v)audio.bgmusic.pause();
+            else if(soundSettings.bgmusic)audio.bgmusic.play().catch(()=>{});
+        } else if(k==='bgmusic'){
+            if(soundSettings.bgmusic&&soundSettings.all)audio.bgmusic.play().catch(()=>{});
+            else audio.bgmusic.pause();
+        }
+        saveSound();
+    };
+});
 
-    skins.forEach(s => {
-        const box = document.createElement("div");
-        box.className = "skinBox" + (s.name === selectedSkin.name ? " selected" : "");
-        
-        const img = document.createElement("img");
-        img.src = s.file;
-        img.onerror = () => img.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZhbGxiYWNrPC90ZXh0Pjwvc3ZnPg==";
-        box.appendChild(img);
-        
-        const nameDiv = document.createElement("div"); nameDiv.className = "name"; nameDiv.textContent = s.name; box.appendChild(nameDiv);
-        const priceDiv = document.createElement("div"); priceDiv.className = "price"; priceDiv.textContent = `${s.unlockScore} pts`; box.appendChild(priceDiv);
-        
-        const overlay = document.createElement("div"); overlay.className = "lockOverlay";
-        if (!skinData[s.name]?.unlocked) overlay.textContent = "🔒"; else overlay.style.display = "none";
-        box.appendChild(overlay);
-        
-        box.onclick = () => {
-            playSound('button');
-            if (skinData[s.name]?.unlocked) {
-                selectedSkin = s;
-                selectedSkinName = s.name;
-                renderSkins();
-                elements.confirmSkinBtn.className = "confirmBtn unlocked";
-            }
-        };
-        elements.skinRow.appendChild(box);
+document.getElementById('storeBackBtn').onclick=()=>{playSound('button');previewSkin=selectedSkin;showScreen('titleScreen');};
+
+function renderSkins(){
+    const row=document.getElementById('skinRow');
+    const disp=document.getElementById('upperSkinDisplay');
+    row.innerHTML="";disp.innerHTML="";
+    const img=document.createElement("img");
+    img.src=previewSkin.file;img.onerror=()=>img.style.display='none';
+    const tit=document.createElement("div");tit.className="skinTitle";tit.textContent=previewSkin.name;
+    disp.appendChild(img);disp.appendChild(tit);
+    skins.forEach(s=>{
+        const box=document.createElement("div");
+        box.className="skinBox"+(s.name===previewSkin.name?" selected":"");
+        const si=document.createElement("img");si.src=s.file;si.onerror=()=>si.style.display='none';box.appendChild(si);
+        const sn=document.createElement("div");sn.className="sName";sn.textContent=s.name;box.appendChild(sn);
+        const sp=document.createElement("div");sp.className="sPrice";sp.textContent=s.unlockScore>0?`Unlock: ${s.unlockScore} pts`:"Free ✅";box.appendChild(sp);
+        const unlocked=skinData[s.name]?.unlocked;
+        if(!unlocked){const lo=document.createElement("div");lo.className="lockOverlay";lo.textContent="🔒";box.appendChild(lo);}
+        box.onclick=()=>{if(!unlocked)return;playSound('button');previewSkin=s;renderSkins();};
+        row.appendChild(box);
     });
-    
-    elements.confirmSkinBtn.className = skinData[selectedSkin.name]?.unlocked ? "confirmBtn unlocked" : "confirmBtn locked";
+    const cb=document.getElementById('confirmSkinBtn');
+    cb.className=skinData[previewSkin.name]?.unlocked?"unlocked":"locked";
 }
 
-elements.confirmSkinBtn.onclick = () => {
-    playSound('button');
-    if (elements.confirmSkinBtn.classList.contains("unlocked")) {
-        localStorage.setItem("selectedSkin", selectedSkin.name);
-        elements.storeScreen.style.display = "none";
-        elements.titleScreen.style.display = "flex";
-    }
+document.getElementById('confirmSkinBtn').onclick=()=>{
+    if(!document.getElementById('confirmSkinBtn').classList.contains('unlocked'))return;
+    playSound('button');selectedSkin=previewSkin;
+    localStorage.setItem("selectedSkin3",selectedSkin.name);showScreen('titleScreen');
 };
 
-elements.pauseBtn.onclick = () => {
-    playSound('button');
-    gameState.paused = !gameState.paused;
-    if (gameState.paused) {
-        elements.pauseBtn.style.display = "none";
-        elements.pauseResumeBtn.style.display = "block";
-        elements.pauseHomeBtn.style.display = "block";
-        if (audio.bgmusic.paused && soundSettings.bgmusic) audio.bgmusic.play();
-    } else {
-        elements.pauseResumeBtn.style.display = "none";
-        elements.pauseHomeBtn.style.display = "none";
-        elements.pauseBtn.style.display = "block";
-    }
+document.getElementById('pauseBtn').onclick=()=>{
+    playSound('button');gs.paused=true;
+    document.getElementById('pauseBtn').style.display="none";
+    document.getElementById('pauseOverlay').style.display="flex";
 };
 
-elements.pauseResumeBtn.onclick = () => {
+// KEY FIX: Resume only sets paused=false — gameLoop already running via rAF
+document.getElementById('pauseResumeBtn').onclick=()=>{
     playSound('button');
-    gameState.paused = false;
-    elements.pauseResumeBtn.style.display = "none";
-    elements.pauseHomeBtn.style.display = "none";
-    elements.pauseBtn.style.display = "block";
+    document.getElementById('pauseOverlay').style.display="none";
+    document.getElementById('pauseBtn').style.display="block";
+    gs.paused=false;
+    // DO NOT call gameLoop() again — it never stopped, just paused
 };
 
-elements.pauseHomeBtn.onclick = () => {
-    playSound('button');
-    if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
-    elements.titleScreen.style.display = "flex";
-    [elements.pauseBtn, elements.pauseResumeBtn, elements.pauseHomeBtn, elements.restartBtn, elements.homeBtn].forEach(el => el.style.display = "none");
-    gameState.gameOver = true;
-    gameState.paused = false;
+document.getElementById('pauseHomeBtn').onclick=()=>{
+    playSound('button');gs.paused=false;gs.gameOver=true;
+    if(gs.animId)cancelAnimationFrame(gs.animId);
+    document.getElementById('pauseOverlay').style.display="none";
+    document.getElementById('pauseBtn').style.display="none";
+    showScreen('titleScreen');
 };
 
-elements.restartBtn.onclick = startGame;
-elements.homeBtn.onclick = () => {
-    playSound('button');
-    if (gameState.animationId) cancelAnimationFrame(gameState.animationId);
-    elements.titleScreen.style.display = "flex";
-    [elements.restartBtn, elements.homeBtn, elements.pauseBtn].forEach(el => el.style.display = "none");
-    gameState.gameOver = true;
-    gameState.paused = false;
+document.getElementById('restartBtn').onclick=()=>{
+    document.getElementById('gameOverOverlay').style.display="none";startGame();
+};
+document.getElementById('homeBtn').onclick=()=>{
+    playSound('button');gs.gameOver=true;
+    if(gs.animId)cancelAnimationFrame(gs.animId);
+    document.getElementById('gameOverOverlay').style.display="none";
+    document.getElementById('pauseBtn').style.display="none";
+    showScreen('titleScreen');
 };
 
 init();
